@@ -1,7 +1,6 @@
-package com.namewui.aiboyfirend;
+package com.namewui.aiboyfirend.engine;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.media.AudioManager;
 import android.media.SoundPool;
@@ -16,12 +15,15 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.iflytek.cloud.RecognizerListener;
-import com.iflytek.cloud.RecognizerResult;
 import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechError;
 import com.iflytek.cloud.SpeechRecognizer;
+import com.iflytek.cloud.SpeechSynthesizer;
 import com.iflytek.cloud.SpeechUtility;
+import com.iflytek.cloud.SynthesizerListener;
 import com.iflytek.sunflower.FlowerCollector;
+import com.namewui.aiboyfirend.R;
+import com.namewui.aiboyfirend.main.Recognition;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,10 +34,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-import static android.R.id.list;
-
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+    private Recognition recognition=new Recognition();
     private SpeechRecognizer mIat;
+    private SpeechSynthesizer mTts;
     private ListView listview;
     private ChaListtAdapter adapter;
     private ImageView img_send;
@@ -77,13 +79,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             anim_draw.stop();
             linear_line.setVisibility(View.INVISIBLE);
         }
-        private void updatelistview(String str,String name,int kind){
-            ChatInfo chat = new ChatInfo(getTime(),str,name, kind);
-            listdata.add(chat);
-            adapter.notifyDataSetChanged();
-//            listview.setAdapter(char_list_baseadapter);
-            listview.setSelection(ListView.FOCUS_DOWN);
-        }
         @Override
         public void onResult(com.iflytek.cloud.RecognizerResult var1, boolean var2) {
             anim_draw.stop();
@@ -117,6 +112,54 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //	}
         }
     };
+    private SynthesizerListener mSynthesizerListener=new SynthesizerListener() {
+        @Override
+        public void onSpeakBegin() {
+
+        }
+
+        @Override
+        public void onBufferProgress(int i, int i1, int i2, String s) {
+
+        }
+
+        @Override
+        public void onSpeakPaused() {
+
+        }
+
+        @Override
+        public void onSpeakResumed() {
+
+        }
+
+        @Override
+        public void onSpeakProgress(int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void onCompleted(SpeechError speechError) {
+
+        }
+
+        @Override
+        public void onEvent(int i, int i1, int i2, Bundle bundle) {
+
+        }
+    };
+    private void updatelistview(String str,String name,int kind){
+        ChatInfo chat = new ChatInfo(getTime(),str,name, kind);
+        listdata.add(chat);
+        String replystr=recognition.getreply(str);
+        ChatInfo chat1 = new ChatInfo(getTime(),replystr,name, 1);
+        listdata.add(chat);
+        listdata.add(chat1);
+        adapter.notifyDataSetChanged();
+//            listview.setAdapter(char_list_baseadapter);
+        listview.setSelection(ListView.FOCUS_DOWN);
+        mTts.startSpeaking(replystr,mSynthesizerListener);
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -124,7 +167,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mcontext=this;
         initView();
         initsound();
-        initSpeech();
+        initListenSpeech();
+        initSpeakSpeech();
     }
 
     private void initsound() {
@@ -137,7 +181,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         soundPoolMap.put(3,mtinksong.load(this, R.raw.bdspeech_recognition_error,1));
         soundPoolMap.put(4,mtinksong.load(this, R.raw.bdspeech_speech_end,1));
     }
-    private void initSpeech() {
+
+    private void initListenSpeech() {
 //        // 将“12345678”替换成您申请的APPID，申请地址：http://www.xfyun.cn
 //// 请勿在“=”与appid之间添加任何空字符或者转义符
 //        SpeechUtility.createUtility(mcontext, SpeechConstant.APPID +"=593df70d");
@@ -187,7 +232,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //3.开始听写
 //听写监听器
     }
+    private void initSpeakSpeech(){
+        mTts=SpeechSynthesizer.createSynthesizer(this,null);
+        mTts.setParameter(SpeechConstant.VOICE_NAME,"xiaoxin");
+        mTts.setParameter(SpeechConstant.VOLUME,"25");
+        mTts.setParameter(SpeechConstant.SPEED,"50");
+    //    mTts.setParameter(SpeechConstant.PITCH,);
 
+//        SpeechConstant.VOICE_NAME: 发音人
+//        SpeechConstant.SPEED: 合成语速
+//        SpeechConstant.VOLUME: 合成音量
+//        SpeechConstant.PITCH: 合成语调
+//        SpeechConstant.BACKGROUND_SOUND: 背景音乐
+//        SpeechConstant.TTS_BUFFER_TIME: 合成音频缓冲时间
+//        SpeechConstant.STREAM_TYPE: 播放类型
+//        SpeechConstant.SAMPLE_RATE: 采样率
+//        SpeechConstant.TTS_AUDIO_PATH: 合成录音保存路径
+//        SpeechConstant.ENGINE_TYPE：引擎类型；
+//        ResourceUtil.TTS_RES_PATH：离线资源路径；
+//        ResourceUtil.ENGINE_START：启动离线引擎；
+    }
     private void initView() {
         listview= (ListView) findViewById(R.id.list_chat);
         img_send= (ImageView) findViewById(R.id.chat_send);

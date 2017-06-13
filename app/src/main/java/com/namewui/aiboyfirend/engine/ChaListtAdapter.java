@@ -1,4 +1,4 @@
-package com.namewui.aiboyfirend;
+package com.namewui.aiboyfirend.engine;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -8,6 +8,8 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.namewui.aiboyfirend.R;
 
 import java.util.ArrayList;
 
