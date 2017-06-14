@@ -37,8 +37,9 @@
                 android:textSize="16sp"
                 android:paddingLeft="30dp"
                 android:paddingRight="30dp"
+                android:layout_marginLeft="50dp"
                 android:background="@drawable/bg_msgbox_send_press"
-                android:text="播放 小苹果"/>
+                android:text=""/>
             <RelativeLayout
                 android:layout_marginRight="8dp"
                 android:layout_marginTop="10dp"

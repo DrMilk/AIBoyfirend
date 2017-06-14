@@ -9,10 +9,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.iflytek.cloud.RecognizerListener;
 import com.iflytek.cloud.SpeechConstant;
@@ -40,8 +42,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SpeechSynthesizer mTts;
     private ListView listview;
     private ChaListtAdapter adapter;
-    private ImageView img_send;
-    private EditText edit_context;
     private Context mcontext;
     private AnimationDrawable anim_draw;
     private LinearLayout linear_line;
@@ -49,8 +49,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private HashMap<Integer,Integer> soundPoolMap;
     private ArrayList<ChatInfo> listdata=new ArrayList<>();
     private HashMap<String, String> mIatResults = new LinkedHashMap<String, String>();
-    private ImageView img_yuyin;
     private int count_speech=0;
+    private boolean voice_status=true;
+    private ImageView img_yuyin;
+    private EditText edit_context;
+    private ImageView img_voice;
+    private ImageView img_send;
+    private Button voice_press;
+    private TextView text_model;
+    private TextView text_speaker;
     private RecognizerListener mRecognizerListener = new RecognizerListener() {
         @Override
         public void onBeginOfSpeech() {
@@ -87,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.i("Wu",count_speech+"");
             if(count_speech==0) {
                 mtinksong.play(soundPoolMap.get(2),1,1,0,0,1);
-                updatelistview(printResult(var1),"AI男朋友",2);
+                updatelistview(printResult(var1),"AI男朋友",1);
 //                wuspeechreflect(var1);
                 Log.i("Wu", "成功了 叫你爸爸1" + var1.getResultString());
                 Log.i("Wu", "成功了 叫你爸爸2" + var1.toString());
@@ -152,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ChatInfo chat = new ChatInfo(getTime(),str,name, kind);
         listdata.add(chat);
         String replystr=recognition.getreply(str);
-        ChatInfo chat1 = new ChatInfo(getTime(),replystr,name, 1);
+        ChatInfo chat1 = new ChatInfo(getTime(),replystr,name, 2);
         listdata.add(chat);
         listdata.add(chat1);
         adapter.notifyDataSetChanged();
@@ -169,6 +176,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initsound();
         initListenSpeech();
         initSpeakSpeech();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mTts.startSpeaking("我是社会王！没有加特林  哒哒哒哒哒~",mSynthesizerListener);
     }
 
     private void initsound() {
@@ -235,8 +248,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void initSpeakSpeech(){
         mTts=SpeechSynthesizer.createSynthesizer(this,null);
         mTts.setParameter(SpeechConstant.VOICE_NAME,"xiaoxin");
-        mTts.setParameter(SpeechConstant.VOLUME,"25");
-        mTts.setParameter(SpeechConstant.SPEED,"50");
+        mTts.setParameter(SpeechConstant.VOLUME,"50");
+        mTts.setParameter(SpeechConstant.SPEED,"100");
     //    mTts.setParameter(SpeechConstant.PITCH,);
 
 //        SpeechConstant.VOICE_NAME: 发音人
@@ -258,14 +271,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         edit_context= (EditText) findViewById(R.id.chat_context);
         img_yuyin= (ImageView) findViewById(R.id.yuyin_img);
         anim_draw= (AnimationDrawable) img_yuyin.getDrawable();
-        listdata.add(new ChatInfo(getTime(),"我是你的AI男盆友！你想问点什么吗~","吴振宇男朋友",1));
-        adapter=new ChaListtAdapter(mcontext,listdata);
-        linear_line= (LinearLayout) findViewById(R.id.main_liner_tink);
-        linear_line.setVisibility(View.INVISIBLE);
-        listview.setAdapter(adapter);
-    //    img_send.setOnClickListener(this);
-        ImageView yuyin = (ImageView) findViewById(R.id.fab_voice);
-        yuyin.setOnTouchListener(new View.OnTouchListener() {
+        text_model= (TextView) findViewById(R.id.chat_model);
+        text_speaker= (TextView) findViewById(R.id.chat_speakers);
+        img_voice= (ImageView) findViewById(R.id.chat_speak);
+        voice_press= (Button) findViewById(R.id.chat_press_button);
+        voice_press.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if (motionEvent.getAction()==MotionEvent.ACTION_DOWN){
@@ -279,23 +289,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                };
                     mtinksong.play(soundPoolMap.get(0),1,1,1,0,1);
                     linear_line.setVisibility(View.VISIBLE);
-                    //  img_yuyin.setVisibility(View.VISIBLE);
+                    voice_press.setText("松开结束");
                     Log.i("Wu", mIat.startListening(mRecognizerListener)+"");
                     mIat.startListening(mRecognizerListener);
                     Log.i("Wu","按了");
                 }
                 if(motionEvent.getAction()==MotionEvent.ACTION_UP){
                     mIat.stopListening();
-                    //        char_list_baseadapter.notify();
                     Log.i("Wu","松开");
                     anim_draw.stop();
                     linear_line.setVisibility(View.INVISIBLE);
-                    //    img_yuyin.setVisibility(View.INVISIBLE);
                     mtinksong.play(soundPoolMap.get(4),1,1,1,0,1);
+                    voice_press.setText("按住说话");
                 }
                 return false;
             }
         });
+        linear_line= (LinearLayout) findViewById(R.id.main_liner_tink);
+        linear_line.setVisibility(View.INVISIBLE);
+        listdata.add(new ChatInfo(getTime(),"我是社会王！没有加特林  哒哒哒哒哒~","吴振宇男朋友",2));
+        adapter=new ChaListtAdapter(mcontext,listdata);
+        listview.setAdapter(adapter);
+        img_send.setOnClickListener(this);
+        img_voice.setOnClickListener(this);
     }
 
     private String getTime(){
@@ -332,10 +348,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (view.getId()){
             case R.id.chat_send:
                 String s=edit_context.getText().toString().trim();
-                listdata.add(new ChatInfo(getTime(),s,"吴振宇男朋友",2));
-                listdata.add(new ChatInfo(getTime(),s,"我",1));
+                listdata.add(new ChatInfo(getTime(),s,"吴振宇男朋友",1));
+                listdata.add(new ChatInfo(getTime(),s,"我",2));
                 adapter.notifyDataSetChanged();
                 break;
+            case R.id.chat_speak:
+                if(voice_status){
+                    img_voice.setImageResource(R.mipmap.navigationbar_search_voice);
+                    voice_press.setVisibility(View.INVISIBLE);
+                    voice_status=false;
+                }else {
+                    img_voice.setImageResource(R.mipmap.message_keyboard_background);
+                    voice_press.setVisibility(View.VISIBLE);
+                    voice_status=true;
+                }
+                ;break;
         }
     }
 }
