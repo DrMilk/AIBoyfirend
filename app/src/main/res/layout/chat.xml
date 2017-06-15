@@ -11,6 +11,7 @@
         android:elevation="6dp"
         android:background="@color/mp_blue">
         <LinearLayout
+            android:id="@+id/chat_title_liner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
@@ -33,6 +34,7 @@
         </LinearLayout>
     </RelativeLayout>
     <FrameLayout
+        android:id="@+id/list_chat_frame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="50dp"

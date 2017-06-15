@@ -2,18 +2,23 @@ package com.namewui.aiboyfirend.engine;
 
 import android.content.Context;
 import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.PaintDrawable;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.iflytek.cloud.RecognizerListener;
@@ -23,8 +28,10 @@ import com.iflytek.cloud.SpeechRecognizer;
 import com.iflytek.cloud.SpeechSynthesizer;
 import com.iflytek.cloud.SpeechUtility;
 import com.iflytek.cloud.SynthesizerListener;
+import com.iflytek.cloud.thirdparty.L;
 import com.iflytek.sunflower.FlowerCollector;
 import com.namewui.aiboyfirend.R;
+import com.namewui.aiboyfirend.customView.PopupWindowMedol;
 import com.namewui.aiboyfirend.main.Recognition;
 
 import org.json.JSONException;
@@ -56,8 +63,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ImageView img_voice;
     private ImageView img_send;
     private Button voice_press;
+    private PopupWindowMedol mPopupWindows;
+    private int width=-1;
+    private int height=-1;
     private TextView text_model;
     private TextView text_speaker;
+    private RelativeLayout rela_titil_top;
     private RecognizerListener mRecognizerListener = new RecognizerListener() {
         @Override
         public void onBeginOfSpeech() {
@@ -272,8 +283,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         img_yuyin= (ImageView) findViewById(R.id.yuyin_img);
         anim_draw= (AnimationDrawable) img_yuyin.getDrawable();
         text_model= (TextView) findViewById(R.id.chat_model);
+        text_model.setOnClickListener(this);
         text_speaker= (TextView) findViewById(R.id.chat_speakers);
+        text_speaker.setOnClickListener(this);
         img_voice= (ImageView) findViewById(R.id.chat_speak);
+        rela_titil_top= (RelativeLayout) findViewById(R.id.chat_top);
         voice_press= (Button) findViewById(R.id.chat_press_button);
         voice_press.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -361,8 +375,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     img_voice.setImageResource(R.mipmap.message_keyboard_background);
                     voice_press.setVisibility(View.VISIBLE);
                     voice_status=true;
-                }
-                ;break;
+                }break;
+            case R.id.chat_model:openpopupwindow();
+               break;
         }
+    }
+    private void openpopupwindow() {
+        //外部变暗
+        if(width==-1&&height==-1){
+            WindowManager windowmanager=this.getWindowManager();
+            width=windowmanager.getDefaultDisplay().getWidth();
+            height=windowmanager.getDefaultDisplay().getHeight();
+        }
+        WindowManager.LayoutParams params = this.getWindow().getAttributes();
+        params.alpha = 0.5f;
+        this.getWindow().setAttributes(params);
+        mPopupWindows = new PopupWindowMedol(mcontext,null,width,height,new String[]{"低智商人工智能机器人",
+                                                        "跟我学模式","超高级人工智能机器人"});
+        mPopupWindows.setBackgroundDrawable(new PaintDrawable());
+        mPopupWindows.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                WindowManager.LayoutParams params = MainActivity.this.getWindow().getAttributes();
+                params.alpha = 1f;
+                MainActivity.this.getWindow().setAttributes(params);
+            }
+        });
+        //出问题了
+        Log.i("Wu","高度"+rela_titil_top.getHeight());
+        mPopupWindows.showAtLocation(MainActivity.this.findViewById(R.id.list_chat_frame),
+                Gravity.NO_GRAVITY ,0, getStatusBarHeight()+rela_titil_top.getHeight());
+    }
+    public int getStatusBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
     }
 }
