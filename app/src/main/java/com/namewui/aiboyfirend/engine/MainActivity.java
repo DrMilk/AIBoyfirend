@@ -5,6 +5,8 @@ import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.PaintDrawable;
 import android.media.AudioManager;
 import android.media.SoundPool;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -69,6 +71,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView text_model;
     private TextView text_speaker;
     private RelativeLayout rela_titil_top;
+    private Handler mhandle=new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            listdata.add(new ChatInfo(getTime(),(String) msg.obj,"吴振宇男朋友",1));
+            mTts.startSpeaking((String) msg.obj,mSynthesizerListener);
+            adapter.notifyDataSetChanged();
+        }
+    };
     private RecognizerListener mRecognizerListener = new RecognizerListener() {
         @Override
         public void onBeginOfSpeech() {
@@ -362,9 +373,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (view.getId()){
             case R.id.chat_send:
                 String s=edit_context.getText().toString().trim();
-                listdata.add(new ChatInfo(getTime(),s,"吴振宇男朋友",1));
-                listdata.add(new ChatInfo(getTime(),s,"我",2));
-                adapter.notifyDataSetChanged();
+                final String[] value=recognition.goOrderBroadcast(s);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        for(int i=0;i<value.length;i++){
+                            final int finalI = i;
+                            Message msg=new Message();
+                            msg.obj=value[i];
+                            mhandle.sendMessage(msg);
+                            try {
+                                Thread.sleep(3000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }).start();
                 break;
             case R.id.chat_speak:
                 if(voice_status){
@@ -390,7 +415,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         WindowManager.LayoutParams params = this.getWindow().getAttributes();
         params.alpha = 0.5f;
         this.getWindow().setAttributes(params);
-        mPopupWindows = new PopupWindowMedol(mcontext,null,width,height,new String[]{"低智商人工智能机器人",
+        mPopupWindows = new PopupWindowMedol(mcontext,null,width,height,new String[]{"低智商人工智能机器人","点名",
                                                         "跟我学模式","超高级人工智能机器人"});
         mPopupWindows.setBackgroundDrawable(new PaintDrawable());
         mPopupWindows.setOnDismissListener(new PopupWindow.OnDismissListener() {

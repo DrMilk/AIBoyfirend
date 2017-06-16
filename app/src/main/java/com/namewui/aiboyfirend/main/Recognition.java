@@ -11,4 +11,7 @@ public class Recognition {
         String result=recognitionParsing.getReplyString(value);
         return result;
     }
+    public String[] goOrderBroadcast(String value){
+        return value.split(",");
+    }
 }
